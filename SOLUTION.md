@@ -7,11 +7,13 @@ This API is built using Python and Flask. It can be run in Docker from this dire
 
 To run the app:
 
+0. Checkout git branch `johns-api`.
 1. Run `sh run_app.sh` to build the Docker image and start the server. The app will be running locally on `http://0.0.0.0:5000`.
-2. Run `python test_api.py` to view a demo of the API on the test data given in the assignment.
+2. Then, run `python test_api.py` to view a demo of the API on the test data given in the assignment.
 3. To stop the container, press `CTRL+C`.
 To restart the container, run `docker start flask-app`. To attach to the container in a bash shell, run `docker exec -it flask-app /bin/sh`. From here, you can also run `python test_api.py` directly. To exit the interactive shell, press `CTRL+P CTRL+Q`.
-To force remove the container, run `docker rm -f flask-app`.
+4. To force remove the container, run `docker rm -f flask-app`.
+5. To run the app in debug mode, run `docker run --name flask-app -p 5000:5000 -v $(pwd):/app/ -it flask-app`.
 
 ## Why rank articles?
 
