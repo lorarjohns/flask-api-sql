@@ -28,10 +28,8 @@ class DataBase:
         return d
 
     def get_db(self):
-        #db = getattr(g, '_database', None)
         if self.db is None:
             self.db = sqlite3.connect(self.db_url)
-            #db = g._database = sqlite3.connect(self.db_url)
 
     def query_db(self, query, args=(), one=False):
         cur = self.db.execute(query, args)
