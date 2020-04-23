@@ -16,10 +16,11 @@ api = Api(app)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class DataBase:
-    def __init__(self):
+    def __init__(self, dict_factory=True):
         self.db_url = os.path.join(app.root_path, 'rank_data.db')
         self.db = sqlite3.connect(self.db_url)
-        self.db.row_factory = self.dict_factory
+        if dict_factory:
+            self.db.row_factory = self.dict_factory
 
     def dict_factory(self, cursor, row):
         d = {}

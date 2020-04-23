@@ -32,7 +32,7 @@ class Ranker(Resource):
                 JOIN articles a2 on users.content_id = a2.content_id
                 GROUP BY a2.content_id
                 ORDER BY COUNT(*) DESC)
-                WHERE content_id IN ({', '.join(["'" + id + "'" for id in content_ids])});
+                WHERE content_id IN ({', '.join(["'" + id + "'" for id in content_ids])})
                 ''')
 
         overall_pops = {d[0]: d[2] for d in total_pop}
@@ -43,19 +43,19 @@ class Ranker(Resource):
         FROM users
         JOIN articles a on users.content_id = a.content_id
         WHERE user_id='{user_id}'
-        GROUP BY section;''')
+        GROUP BY section''')
         individual_pop = {u[0]: u[1]  for u in user_data}
         
         # Which articles has user read?
         read = [i[0] for i in self.db.query_db(f'''
         SELECT users.content_id
         FROM users
-        WHERE user_id='{user_id}';
+        WHERE user_id='{user_id}'
         ''')]
         result = []
         for id in content_ids:
             if id not in read:
-                article_topic = self.db.query_db('SELECT section FROM articles WHERE content_id = ?;', (id,))[0][0]
+                article_topic = self.db.query_db('SELECT section FROM articles WHERE content_id = ?', (id,))[0][0]
                 user_pop = individual_pop.get(article_topic, 0)
                 tiebreaker = overall_pops.get(id)
                 result.append((id, article_topic, user_pop, tiebreaker))
