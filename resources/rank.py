@@ -46,13 +46,6 @@ class Ranker(Resource):
         #For debugging:
         #print(query)
         #print(self.db.db_url)
-        total_pop = self.db.query_db('''
-        SELECT users.content_id, section, COUNT(*)
-        FROM users
-        JOIN articles a2 on users.content_id = a2.content_id
-        GROUP BY users.content_id, section;
-        ''')
-        print(total_pop)
-        user_read = self.db.query_db("select ")
+        user_rank = self.db.query_db(query)
         
         return jsonify({"content_ids": [d["content_id"] for d in user_rank]})
