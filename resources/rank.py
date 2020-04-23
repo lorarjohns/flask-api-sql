@@ -18,7 +18,7 @@ class Ranker(Resource):
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
-        self.db = kwargs['DataBase']()
+        self.db = kwargs['DataBase'](dict_factory=False)
 
     def post(self):
         user_id = request.json['user_id']
