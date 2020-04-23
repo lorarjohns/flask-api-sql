@@ -1,6 +1,18 @@
 # The Readership Ranking API
 ##
 
+## Usage
+
+This API is built using Python and Flask. It can be run in Docker from this directory using the following instructions.
+
+To run the app:
+
+1. Run `sh run_app.sh` to build the Docker image and start the server. The app will be running locally on `http://0.0.0.0:5000`.
+2. Run `python test_api.py` to view a demo of the API on the test data given in the assignment.
+3. To stop the container, press `CTRL+C`.
+To restart the container, run `docker start flask-app`. To attach to the container in a bash shell, run `docker exec -it flask-app /bin/sh`. From here, you can also run `python test_api.py` directly. To exit the interactive shell, press `CTRL+P CTRL+Q`.
+To force remove the container, run `docker rm -f flask-app`.
+
 ## Why rank articles?
 
 Ranking articles by counting how many times each was "read" (or at least clicked on) by a unique visitor gives a straightforward overall picture of the _Times_ readership. Breaking that count down into topic sections begins to give us a more nuanced picture.
@@ -58,3 +70,20 @@ For purposes of this assignment, I wanted to build a prototype that did not have
 
  Because of the limitations of `sqlite3`, the queries in this database are written using Python string interpolation. While it is not likely that these specific queries would be vulnerable to SQL injection, better practice would be to use an ORM framework like SQLAlchemy as an interface. I have mocked up database models but did not build out the entire Postgres/SQLAlchemy infrastructure, which would be a potential next step.
 
+ The instructions weren't explicit about the ranking choice to make when there is no section tie, but a user has read _no_ articles in a section. In that case, I have ranked the article with more overall views higher (similarly to the logic for breaking category ties). While this is possible in SQL alone, not all versions of sqlite have window function capability (my native installation on Ubuntu LTS does not, for instance. To clarify my thought process and to make the program easier to read and debug, I rewrote the logic in Python.
+
+2. Further development
+
+I collected additional metadata from the New York Times Articles API using the URLs in the article_data csv. For building a collaborative filtering or graph algorithm to recommend content or segment user groups, we could leverage additional information from this data such as: 
+
+- word count 
+- byline
+- human-engineered geographic and descriptive facets
+- machine-learned latent facets
+- dates and days of publication
+- subsection
+- abstract
+- images and captions
+- sentiment scores
+
+Together with individualized user reading preference data, such features would allow for a marriage of collaborative filtering, which is based on data harvested from the individual use patterns of other users, and content-based recommendation, which focuses more on the aggregate characteristics of the articles. Either one alone might create a bias that drowns out interesting articles in the long tail of the distribution, but together enable recommending relevant but "surprising" and interesting content.

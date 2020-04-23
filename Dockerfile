@@ -10,6 +10,7 @@ COPY rank_data.db /app/
 COPY resources/ /app/resources/
 
 WORKDIR /app
+#RUN python app.py &>/dev/null &
 
 ENTRYPOINT [ "python" ]
 CMD ["app.py"]
