@@ -36,10 +36,25 @@ If an article ID exists in the database but the given user has not read it, the 
 
 ## Motivations
 
-1. Simplicity
+1. Versatility
 
 For purposes of this assignment, I wanted to build a prototype that did not have too many exotic dependencies and could be scaled or adapted. To that end, I used Flask-RESTful as a framework for API design. Since the design follows RESTful principles, I could easily convert this API to a YAML Swagger specification and reconfigure it to work in a different programming language or framework.
 
+2. Ubiquity
 
+ I chose to use SQL for the core logic of the program for two main reasons. As SQL is the 'skinny waist' of data science, it isn't possible to turn raw data into refined information without knowing how to use it. While it's not a large-scale overall solution, `sqlite3` is part of the Python standard library; fast and lightweight; and easy to set up, all of which made it a good choice for fulfilling the explicit requirements of this assignment.
 
-demonstrated how I think more than what code I can copy from Stack Exchange.
+  Similarly, the entire application runs in Docker, to minimize setup effort and maximize portability.
+
+ 3. Extensibility
+
+ I wanted to use concepts and tools that could be adapted to more data and would integrate well with machine learning components later on. To that end, I either tried to incorporate such design directly or, where that wasn't immediately feasible, to make a note of what future challenges we might encounter.
+
+ ## Challenges and further development
+
+ 1. Known issues
+ 
+ This is a prototype, so it doesn't have as much testing or as much robustness to real-life use as a production server should. Specifically, I would prioritize handling malformed user input and best-practice handling of cases in which no data is found. 
+
+ Because of the limitations of `sqlite3`, the queries in this database are written using Python string interpolation. While it is not likely that these specific queries would be vulnerable to SQL injection, better practice would be to use an ORM framework like SQLAlchemy as an interface. I have mocked up database models but did not build out the entire Postgres/SQLAlchemy infrastructure, which would be a potential next step.
+
