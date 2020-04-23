@@ -26,10 +26,10 @@ class Ranker(Resource):
         content_ids = payload['content_ids']
 	
         query = f'''
-        SELECT a.section, content_id, user_id,
+        SELECT a.section, a.content_id, user_id,
         RANK() OVER (ORDER BY (
-                    SELECT COUNT(content_id)
-                    OVER (PARTITION BY a.section ORDER BY r.count ASC) AS score
+                    SELECT COUNT(a.content_id)
+                    OVER (PARTITION BY a.section ORDER BY r.count DESC) AS score
                         FROM users
                         )) as rank
         FROM users
@@ -46,6 +46,12 @@ class Ranker(Resource):
         #For debugging:
         #print(query)
         #print(self.db.db_url)
-        user_rank = self.db.query_db(query)
+        total_pop = self.db.query_db('''
+        SELECT users.content_id, section, COUNT(*)
+        FROM users
+        JOIN articles a2 on users.content_id = a2.content_id
+        GROUP BY users.content_id, section;
+        ''')
+        user_read = self.db.query_db("select ")
         
         return jsonify({"content_ids": [d["content_id"] for d in user_rank]})
