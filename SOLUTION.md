@@ -10,10 +10,15 @@ To run the app:
 0. Checkout git branch `johns-api`.
 1. Run `sh run_app.sh` to build the Docker image and start the server. The app will be running locally on `http://0.0.0.0:5000`.
 2. Then, run `python test_api.py` to view a demo of the API on the test data given in the assignment.
-3. To stop the container, press `CTRL+C`.
-To restart the container, run `docker start flask-app`. To attach to the container in a bash shell, run `docker exec -it flask-app /bin/sh`. From here, you can also run `python test_api.py` directly. To exit the interactive shell, press `CTRL+P CTRL+Q`.
-4. To force remove the container, run `docker rm -f flask-app`.
-5. To run the app in debug mode, run `docker run --name flask-app -p 5000:5000 -v $(pwd):/app/ -it flask-app`.
+
+Other ways you may want to interact with the container:
+
+3.  To attach to the container in a bash shell, run `docker exec -it flask-app /bin/sh`. From here, you can also run `python test_api.py` directly. To exit the interactive shell, press `CTRL+P CTRL+Q`.
+4. To stop the container, run `docker stop flask-app`. To restart the container, run `docker start flask-app`.
+5. To force remove the container, run `docker rm -f flask-app`.
+6. To run the app in debug mode, run `docker run --name flask-app -p 5000:5000 -v $(pwd):/app/ -it flask-app`.
+7. To stop the container, press `CTRL+C`.
+
 
 ## Why rank articles?
 
@@ -70,7 +75,7 @@ For purposes of this assignment, I wanted to build a prototype that did not have
  
  This is a prototype, so it doesn't have as much testing or as much robustness to real-life use as a production server should. Specifically, I would prioritize handling malformed user input and best-practice handling of cases in which no data is found. 
 
- Because of the limitations of `sqlite3`, the queries in this database are written using Python string interpolation. While it is not likely that these specific queries would be vulnerable to SQL injection, better practice would be to use an ORM framework like SQLAlchemy as an interface. I have mocked up database models but did not build out the entire Postgres/SQLAlchemy infrastructure, which would be a potential next step.
+ Because of the limitations of `sqlite3`, the queries in this database are written using Python string interpolation. While it is not likely that these specific queries would be very vulnerable to SQL injection, better practice would be to use an ORM framework like SQLAlchemy as an interface. I have mocked up database models but did not build out the entire Postgres/SQLAlchemy infrastructure, which would be a good potential next step.
 
  The instructions weren't explicit about the ranking choice to make when there is no section tie, but a user has read _no_ articles in a section. In that case, I have ranked the article with more overall views higher (similarly to the logic for breaking category ties). While this is possible in SQL alone, not all versions of sqlite have window function capability (my native installation on Ubuntu LTS does not, for instance. To clarify my thought process and to make the program easier to read and debug, I rewrote the logic in Python.
 
