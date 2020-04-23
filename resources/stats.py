@@ -40,7 +40,7 @@ class Section(Resource):
         results = self.db.query_db(self.query, user_id)
         tally = {d['section']: d['count'] for d in results}
 
-        return jsonify(tally)
+        return make_response(jsonify(tally))
 
     def post(self):
         return self.get()
