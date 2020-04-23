@@ -1,0 +1,21 @@
+# Python
+
+__pycache__/
+*.pyc
+
+# pyenv
+
+.python_version
+
+# VS Code
+
+.vscode/
+
+# Testing
+.pytest_cache/
+.tox/
+.cache
+
+# macOS
+
+*.DS_Store
