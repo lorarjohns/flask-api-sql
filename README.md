@@ -1,144 +1,132 @@
-To better assess a candidate's development skills, we would like to provide the following challenge. You have as much time as you'd like (though we ask that you not spend more than a few hours). 
+# The Readership Ranking API
 
-## Submission Instructions
+## Usage
 
-1. You'll receive this repo as a .tar.gz file, which contains a git repo (.git). Please branch from master for your project.
-2. Complete the project as described below within your branch.
-3. Finally, create a zip file of your project/repo, including the .git directory. Please email the zip file (or link to it) to your Recruiting contact at The New York Times to let them know you have submitted a solution. In the email, please indicate the name of your branch.
+This API is built using Python and Flask. It can be run in Docker from this directory using the following instructions.
 
-## Project Description
+To run the app:
 
-This problem consists of building an API that marries two sample data sets (NYTimes article data and some fake user reading history) to build an article ranking endpoint. We'd like for you to build an endpoint that takes in a list of articles, represented by ids, and returns those articles ranked in order of a user's preferences. In this case, "preference" means a users interest or preference for articles from a given "section" of The New York Times. You will need to look at the user's reading history (i.e. articles they have read) to get a sense of which sections they read (if any). We have a few more requirements around this ranking endpoint, so please read the instructions below. Before building the ranking endpoint, you'll also build an endpoint which returns the number of unique articles read per section for a given user.
+0. Checkout git branch `johns-api`.
+1. Run `sh run_app.sh` to build the Docker image and start the server. The app will be running locally on `http://0.0.0.0:5000`.
+2. Then, run `python test_api.py` to view a demo of the API on the test data given in the assignment.
 
-The API endpoints and data files are described in detail below.
+Other ways you may want to interact with the container:
 
-### Here's what your API must do:
+3.  To attach to the container in a bash shell, run `docker exec -it flask-app /bin/sh`. From here, you can also run `python test_api.py` directly. To exit the interactive shell, press `CTRL+P CTRL+Q`.
+4. To stop the container, run `docker stop flask-app`. To restart the container, run `docker start flask-app`.
+5. To force remove the container, run `docker rm -f flask-app`.
+6. To run the app in debug mode, run `docker run --name flask-app -p 5000:5000 -v $(pwd):/app/ -it flask-app`.
+7. To stop the container, press `CTRL+C`.
 
-1. be written in either Python or Go
+## Structure of the API
+As a prerequisite to building that graph of knowledge, we need the basics. This API provides an **article ranking endpoint** for two sets of data:
+- NYTimes article data
+- (fake) user reading history 
 
-2. have an endpoint `GET /healthcheck` that returns the following JSON payload:
+Specifically, the following three endpoints can be accessed. Please run `python test_api.py` for a demo of all three.
 
-    ```
-    {
-        "status": "OK"
-    }
-    ```
+### `GET /healthcheck`
 
-3. have an endpoint `GET /stats/section` that accepts a `user_id` as a URL parameter and returns the number of unique articles the given user has read per section. For example, if user_id `u:1234` has read 12 `sports` articles, 7 `science` articles and 3 `climate` articles, the endpoint would return the following JSON payload:
+_parameters:_ _None_
 
-    ```
-    {
-        "sports": 12,
-        "science": 7,
-        "climate": 3
-    }
-    ```
+This endpoint simply returns a status check for the server.
 
-    The URL for this request would look something like this:
+### `GET /stats/section`
 
-    `/stats/section?user_id=u:1234`
+_parameters:_ `user_id` (e.g. `u:012345`)
 
-    The format of the `user_id` parameter should be `u:id` as found in the user_history.csv file.
+This request returns the number of unique articles a given user has read per section ('arts', 'world', 'science', etc.)
 
-4. have an endpoint `POST /rank/section` that takes in a list of content_ids and returns the content_ids ranked based on a given user's section "preference". You'll return the ranked list of content_ids as a JSON payload and (**important**) you'll remove any content_ids from the list that the given user has already read. Here is explicitly what we are looking for with this endpoint:
+### `POST /rank/section`
 
-    1. like the stats endpoint, this endpoint should accept a `user_id` as a URL parameter. For example:
-    
-        `/rank/section?user_id=u:1234`
+_parameters_: `content_ids` (list of article ids)
 
-    2. this endpoint should accept a list of `content_ids` as JSON in the request body (Content-Type: application/json). The format of the body should look like this:
+Passing a list of article ids to this endpoint produces a ranking of those articles in order of a user's most frequently read sections.
 
-        ```
-        {
-            "content_ids": [
-                "d685d651-31ab-42ba-9150-158f5a175241",
-                "37b6e72c-6ca3-46e3-92e5-c4a66c2aa834",
-                "d4817adf-6050-46dc-b2ed-77cc668069aa"
-            ]
-        }
-        ```
+If an article ID exists in the database but the given user has not read it, the endpoint uses aggregate section popularity as a fallback ranking.
 
-    3. rank the list of `content_ids` in order of the user's section "preference" (based on the number of artices they have read per section - as you did in the `/stats/section` endpoint). If there are multiple articles from the same section, please rank those articles by their overall popularity (based on the total number of unique article "reads").
+## Tests
 
-    4. remove any `content_ids` that the user had already read.
+As noted, you can run the following tests by invoking `python test_api.py`.
 
-    5. return the remaining, ranked list of `content_ids` as JSON, like the following:
+### `/stats/section` test
 
-        ```
-        {
-            "content_ids": [
-                "d4817adf-6050-46dc-b2ed-77cc668069aa"
-                "37b6e72c-6ca3-46e3-92e5-c4a66c2aa834",
-                "d685d651-31ab-42ba-9150-158f5a175241",
-            ]
-        }
-        ```
+@param input: /stats/section?user_id=u:0eccf48d721e
+@returns: {"health": 15, "sports": 9, "style": 10, "upshot": 12, "world": 35}
 
-5. include a SOLUTION.md file with an explanation of your approach and instructions for how to run your solution.
+@param input:  /stats/section?user_id=u:e6f4cc3ba334
+@returns:  {"business": 32, "dining": 14, "education": 13, "health": 7, "science": 24, "technology": 9, "upshot": 6, "us": 21, "world": 41}
 
-Your application does **not** need to handle authentication or authorization.
+### `/rank/section test`
 
-Your application should be easy to set up and should run on either Linux or Mac OS X. Please make sure you use Python 3.7+ or Go 1.12+. Feel free to use any framework (e.g. Flask) but your application should not require any for-pay software.
-
-### Data Files:
-
-Two data files (included in this repo) are to be used in your two endpoints: `article_data.csv` and `user_history.csv`.
-
-**`article_data.csv`** is a CSV file with the following columns: `content_id`, `section`, `title`, `url`. There are roughly 500-600 articles included in this file and represent NYTimes articles from late 2019 and early 2020.
-
-**`user_history.csv`** is a CSV file with the following columns: `user_id`, `content_id`. This file represents some fake users and corresponding articles they have read. The user_ids were auto-generated and don't represent any real users. The reading patterns (i.e. which articles they read) were also auto-generated and don't represent the reading habits of actual users.
-
-### Testing:
-
-Here is some data you can use in testing your `/stats/section` and `/rank/section` endpoints.
-
-`/stats/section` test data:
-
-```
- /stats/section?user_id=u:0eccf48d721e should return:
- 
- {"health": 15, "sports": 9, "style": 10, "upshot": 12, "world": 35}
-
-
- /stats/section?user_id=u:e6f4cc3ba334 should return:
- 
- {"business": 32, "dining": 14, "education": 13, "health": 7, "science": 24, "technology": 9, "upshot": 6, "us": 21, "world": 41}
-
-```
-
-`/rank/section` test data:
-
-```
- /rank/section?user_id=u:0eccf48d721e using the following content_ids:
-
-        c2806f15-9b98-4bbc-b66a-13d131f63aac
-        9728ca66-54a3-4229-adf2-70dbbfed5049
-        675da7be-ac22-49f1-b4ba-b967abdd819e
-        ed8d04f8-d103-4c02-ab35-55902fdf9f6d
-        af56c5dd-fddc-4fe5-b0b7-2b74d951ec0b
-        1bce63f2-f3c4-4f9e-9491-45d1c4aaec02
-        9a1f8fb9-19ec-4451-aee8-d3a0e9dcfb30
-
-should return the following payload:
-
-{"content_ids": ["1bce63f2-f3c4-4f9e-9491-45d1c4aaec02",
+ @param input: `/rank/section?user_id=u:0eccf48d721e`
+ @param input: `[
+        'c2806f15-9b98-4bbc-b66a-13d131f63aac',
+        '9728ca66-54a3-4229-adf2-70dbbfed5049',
+        '675da7be-ac22-49f1-b4ba-b967abdd819e',
+        'ed8d04f8-d103-4c02-ab35-55902fdf9f6d',
+        'af56c5dd-fddc-4fe5-b0b7-2b74d951ec0b',
+        '1bce63f2-f3c4-4f9e-9491-45d1c4aaec02',
+        '9a1f8fb9-19ec-4451-aee8-d3a0e9dcfb30']`
+@returns: `{"content_ids": ["1bce63f2-f3c4-4f9e-9491-45d1c4aaec02",
                  "675da7be-ac22-49f1-b4ba-b967abdd819e",
                  "9a1f8fb9-19ec-4451-aee8-d3a0e9dcfb30",
                  "9728ca66-54a3-4229-adf2-70dbbfed5049",
                  "af56c5dd-fddc-4fe5-b0b7-2b74d951ec0b",
-                 "ed8d04f8-d103-4c02-ab35-55902fdf9f6d"]}
+                 "ed8d04f8-d103-4c02-ab35-55902fdf9f6d"]}`
 
-* please note that content_id c2806f15-9b98-4bbc-b66a-13d131f63aac has been removed from the returned payload because the user has already read that article.
+## Data
 
-```
+Two data files (included in this repo) form the basis of the endpoints: `article_data.csv` and `user_history.csv`.
 
+**`article_data.csv`** is a CSV file with the following columns: `content_id`, `section`, `title`, `url`. There are roughly 500-600 articles included in this file and represent NYTimes articles from late 2019 and early 2020.
 
-## Evaluation
+**`user_history.csv`** is a CSV file with the following columns: `user_id`, `content_id`. This file represents some fake users and corresponding articles they have "read". The user_ids are synthetic and were randomly generated. Their corresponding articles attached to thm were also auto-generated, and so they don't represent real reading patterns of any actual people.
 
-Evaluation of your submission will be based on the following criteria. Additionally, reviewers will attempt to assess your familiarity with standard libraries and how you've structured your submission.
+## Why rank articles?
 
-1. Did your application fulfill the basic requirements?
-2. Did you document the method for setting up and running your application?
-3. Did you follow the instructions for submission?
+Ranking articles by counting how many times each was "read" (or at least clicked on) by a unique visitor gives a straightforward overall picture of the _Times_ readership. Breaking that count down into topic sections begins to give us a more nuanced picture.
 
-Thank you and best of luck!
+When we can add individual people's reading preferences into the analysis, though, the data can bring latent relationships to the fore. Besides knowing what any one person likes to read, we can discover sub-clusters of "reading clubs"---readership segments that don't map neatly to any preconceived categories. 
+
+## Motivations
+
+1. Versatility
+
+For purposes of this assignment, I wanted to build a prototype that did not have too many exotic dependencies and could be scaled or adapted. To that end, I used Flask-RESTful as a framework for API design. Since the design follows RESTful principles, I could easily convert this API to a YAML Swagger specification and reconfigure it to work in a different programming language or framework.
+
+2. Ubiquity
+
+ I chose to use SQL for the core logic of the program for two main reasons. As SQL is the 'skinny waist' of data science, it isn't possible to turn raw data into refined information without knowing how to use it. While it's not a large-scale overall solution, `sqlite3` is part of the Python standard library; fast and lightweight; and easy to set up, all of which made it a good choice for fulfilling the explicit requirements of this assignment.
+
+  Similarly, the entire application runs in Docker, to minimize setup effort and maximize portability.
+
+ 3. Extensibility
+
+ I wanted to use concepts and tools that could be adapted to more data and would integrate well with machine learning components later on. To that end, I either tried to incorporate such design directly or, where that wasn't immediately feasible, to make a note of what future challenges we might encounter.
+
+ ## Challenges and further development
+
+ 1. Known issues
+ 
+ This is a prototype, so it doesn't have as much testing or as much robustness to real-life use as a production server should. Specifically, I would prioritize handling malformed user input and best-practice handling of cases in which no data is found. 
+
+ Because of the limitations of `sqlite3`, the queries in this database are written using Python string interpolation. While it is not likely that these specific queries would be very vulnerable to SQL injection, better practice would be to use an ORM framework like SQLAlchemy as an interface. I have mocked up database models but did not build out the entire Postgres/SQLAlchemy infrastructure, which would be a good potential next step.
+
+ The instructions weren't explicit about the ranking choice to make when there is no section tie, but a user has read _no_ articles in a section. In that case, I have ranked the article with more overall views higher (similarly to the logic for breaking category ties). While this is possible in SQL alone, not all versions of sqlite have window function capability (my native installation on Ubuntu LTS does not, for instance. To clarify my thought process and to make the program easier to read and debug, I rewrote the logic in Python.
+
+2. Further development
+
+I collected additional metadata from the New York Times Articles API using the URLs in the article_data csv. For building a collaborative filtering or graph algorithm to recommend content or segment user groups, we could leverage additional information from this data such as: 
+
+- word count 
+- byline
+- human-engineered geographic and descriptive facets
+- machine-learned latent facets
+- dates and days of publication
+- subsection
+- abstract
+- images and captions
+- sentiment scores
+
+Together with individualized user reading preference data, such features would allow for a marriage of collaborative filtering, which is based on data harvested from the individual use patterns of other users, and content-based recommendation, which focuses more on the aggregate characteristics of the articles. Either one alone might create a bias that drowns out interesting articles in the long tail of the distribution, but together enable recommending relevant but "surprising" and interesting content.
